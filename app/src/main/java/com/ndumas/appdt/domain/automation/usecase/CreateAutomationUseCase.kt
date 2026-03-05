@@ -14,7 +14,6 @@ class CreateAutomationUseCase
         private val repository: AutomationRepository,
     ) {
         operator fun invoke(draft: AutomationDraft): Flow<Result<Unit, DataError>> {
-            // 1. Validazione Difensiva
             if (draft.name.isBlank()) {
                 return flowOf(Result.Error(DataError.Validation.EMPTY_NAME))
             }
@@ -24,8 +23,6 @@ class CreateAutomationUseCase
             if (draft.actions.isEmpty()) {
                 return flowOf(Result.Error(DataError.Validation.NO_ACTIONS))
             }
-
-            // 2. Esecuzione
             return repository.createAutomation(draft)
         }
     }
