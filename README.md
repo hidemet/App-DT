@@ -1,6 +1,5 @@
 ﻿# App-DT: Green Smart Home Digital Twin
 
-## Title & Elevator Pitch
 A native Android application designed to revolutionize domestic energy management through a *user-in-the-loop* approach. By interfacing with a household Digital Twin, the app moves beyond typical "blind" home automation concepts by enabling a "What-If" simulation layer. Users can prospectively evaluate the energetic impact of their actions before execution, preventing power overloads and waste in real-time.
 
 ## Tech Stack
