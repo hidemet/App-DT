@@ -34,47 +34,49 @@ During rigorous empirical user testing across residential task scenarios, the ap
 
 ## 🏛️ System Architecture
 
-The application is built strictly around **Clean Architecture** and **Reactive MVVM** principles to decouple business logic from the Android UI framework.
+The application is built strictly around **Clean Architecture** and **Reactive MVVM** principles to decouple business logic from the Android UI framework, following the official architecture defined in the Master's Thesis:
+
+<p align="center">
+  <img src="media/architecture.png" width="520" alt="Application Architecture" />
+</p>
 
 ```mermaid
 graph TD
-    subgraph UI ["Presentation Layer (MVVM)"]
-        Activity["Activities & Fragments<br/>(ViewBinding, Material Design 3)"]
-        VM["ViewModels<br/>(StateFlow / SharedFlow)"]
-        Activity -->|Observes UI State| VM
+    subgraph Presentation ["Presentation Layer"]
+        View["View (UI)"]
+        VM["ViewModel"]
+        View -->|"observes / interacts"| VM
     end
 
-    subgraph Domain ["Domain Layer (Framework-Agnostic)"]
-        UC1["SimulateAutomationUseCase"]
-        UC2["CreateAutomationUseCase"]
-        UC3["GetDevicesUseCase"]
-        RepoDomain["Repository Interfaces<br/>(AutomationRepository, DeviceRepository, ...)"]
-        UC1 --> RepoDomain
-        UC2 --> RepoDomain
-        UC3 --> RepoDomain
+    subgraph Domain ["Domain Layer"]
+        UC["UseCase"]
+        RepoInterface["Repository<br/>«interface»"]
+        DomainModel["Domain Model"]
+        UC --> RepoInterface
     end
 
-    subgraph Data ["Data & Network Layer"]
-        RepoImpl["Repository Implementations<br/>(AutomationRepositoryImpl, DeviceRepositoryImpl, ...)"]
-        Retrofit["Retrofit REST API<br/>(Moshi JSON / DTOs)"]
-        DataStore["DataStore Preferences<br/>(Local Cache)"]
-        RepoImpl --> Retrofit
-        RepoImpl --> DataStore
+    subgraph Data ["Data Layer"]
+        RepoImpl["RepositoryImpl"]
+        RemoteDS["RemoteDataSource"]
+        LocalDS["LocalDataSource"]
+        ApiService["ApiService<br/>(Retrofit)"]
+        DTO["DTO<br/>(Moshi)"]
+        Mapper["Mapper"]
+
+        RepoImpl --> RemoteDS
+        RepoImpl --> LocalDS
+        RemoteDS --> ApiService
+        ApiService --> DTO
+        Mapper -.->|"«read»"| DTO
     end
 
-    subgraph External ["Physical / Simulated Environment"]
-        DT["Digital Twin Runtime Server<br/>(PRIN EUD4GSH IoT Hub)"]
-        Retrofit <-->|HTTP / REST (JSON)| DT
-    end
-
-    VM -->|Invokes| UC1
-    VM -->|Invokes| UC2
-    VM -->|Invokes| UC3
-    RepoImpl -.->|Implements| RepoDomain
+    VM --> UC
+    RepoImpl -.->|"«implements»"| RepoInterface
+    Mapper -->|"«produces»"| DomainModel
 ```
 
 ### Architectural Highlights
-- **Domain Layer Isolation:** All business rules and Digital Twin negotiation transactions (`SimulateAutomationUseCase`, `CheckAuthStateUseCase`) are encapsulated in pure Kotlin UseCases.
+- **Domain Layer Isolation:** All business rules and Digital Twin negotiation transactions (`SimulateAutomationUseCase`, `CheckAuthStateUseCase`) are encapsulated in pure Kotlin UseCases and depend only on domain repository interfaces.
 - **Dependency Injection with Dagger Hilt:** Modularized into `NetworkModule`, `RepositoryModule`, and `DataSourceModule` for high unit-testability and mock injection.
 - **Asynchronous State Streams:** UI state is managed via `StateFlow` and `SharedFlow`, guaranteeing lifecycle-aware state delivery without memory leaks.
 
