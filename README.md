@@ -40,41 +40,6 @@ The application is built strictly around **Clean Architecture** and **Reactive M
   <img src="media/architecture.png" width="520" alt="Application Architecture" />
 </p>
 
-```mermaid
-graph TD
-    subgraph Presentation ["Presentation Layer"]
-        View["View (UI)"]
-        VM["ViewModel"]
-        View -->|"observes / interacts"| VM
-    end
-
-    subgraph Domain ["Domain Layer"]
-        UC["UseCase"]
-        RepoInterface["Repository<br/>«interface»"]
-        DomainModel["Domain Model"]
-        UC --> RepoInterface
-    end
-
-    subgraph Data ["Data Layer"]
-        RepoImpl["RepositoryImpl"]
-        RemoteDS["RemoteDataSource"]
-        LocalDS["LocalDataSource"]
-        ApiService["ApiService<br/>(Retrofit)"]
-        DTO["DTO<br/>(Moshi)"]
-        Mapper["Mapper"]
-
-        RepoImpl --> RemoteDS
-        RepoImpl --> LocalDS
-        RemoteDS --> ApiService
-        ApiService --> DTO
-        Mapper -.->|"«read»"| DTO
-    end
-
-    VM --> UC
-    RepoImpl -.->|"«implements»"| RepoInterface
-    Mapper -->|"«produces»"| DomainModel
-```
-
 ### Architectural Highlights
 - **Domain Layer Isolation:** All business rules and Digital Twin negotiation transactions (`SimulateAutomationUseCase`, `CheckAuthStateUseCase`) are encapsulated in pure Kotlin UseCases and depend only on domain repository interfaces.
 - **Dependency Injection with Dagger Hilt:** Modularized into `NetworkModule`, `RepositoryModule`, and `DataSourceModule` for high unit-testability and mock injection.
