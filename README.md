@@ -45,33 +45,36 @@ graph TD
     end
 
     subgraph Domain ["Domain Layer (Framework-Agnostic)"]
-        UC1["SimulateWhatIfUseCase"]
-        UC2["ResolveConflictUseCase"]
-        UC3["ManageDevicesUseCase"]
-        VM -->|Invokes| UC1
-        VM -->|Invokes| UC2
-        VM -->|Invokes| UC3
+        UC1["SimulateAutomationUseCase"]
+        UC2["CreateAutomationUseCase"]
+        UC3["GetDevicesUseCase"]
+        RepoDomain["Repository Interfaces<br/>(AutomationRepository, DeviceRepository, ...)"]
+        UC1 --> RepoDomain
+        UC2 --> RepoDomain
+        UC3 --> RepoDomain
     end
 
     subgraph Data ["Data & Network Layer"]
-        Repo["DigitalTwinRepositoryImpl"]
-        Retrofit["Retrofit REST API<br/>(Moshi JSON)"]
+        RepoImpl["Repository Implementations<br/>(AutomationRepositoryImpl, DeviceRepositoryImpl, ...)"]
+        Retrofit["Retrofit REST API<br/>(Moshi JSON / DTOs)"]
         DataStore["DataStore Preferences<br/>(Local Cache)"]
-        UC1 --> Repo
-        UC2 --> Repo
-        UC3 --> Repo
-        Repo --> Retrofit
-        Repo --> DataStore
+        RepoImpl --> Retrofit
+        RepoImpl --> DataStore
     end
 
     subgraph External ["Physical / Simulated Environment"]
         DT["Digital Twin Runtime Server<br/>(PRIN EUD4GSH IoT Hub)"]
         Retrofit <-->|HTTP / REST (JSON)| DT
     end
+
+    VM -->|Invokes| UC1
+    VM -->|Invokes| UC2
+    VM -->|Invokes| UC3
+    RepoImpl -.->|Implements| RepoDomain
 ```
 
 ### Architectural Highlights
-- **Domain Layer Isolation:** All business rules and Digital Twin negotiation transactions (`SimulateWhatIfUseCase`, `CheckAuthStateUseCase`) are encapsulated in pure Kotlin UseCases.
+- **Domain Layer Isolation:** All business rules and Digital Twin negotiation transactions (`SimulateAutomationUseCase`, `CheckAuthStateUseCase`) are encapsulated in pure Kotlin UseCases.
 - **Dependency Injection with Dagger Hilt:** Modularized into `NetworkModule`, `RepositoryModule`, and `DataSourceModule` for high unit-testability and mock injection.
 - **Asynchronous State Streams:** UI state is managed via `StateFlow` and `SharedFlow`, guaranteeing lifecycle-aware state delivery without memory leaks.
 
